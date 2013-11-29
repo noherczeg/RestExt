@@ -1,7 +1,16 @@
 RestExt
 =======
 
-A PHP REST Extension for the Laravel Framework
+A PHP REST Extension for the Laravel Framework.
+
+With this package you can easily create a REST API which:
+
++ can be versioned via route prefixes
++ supports authorization in controllers or inside methods via interface implementation
++ supports query string aware pagination with pagination links, and metadata
++ link generation (e.g. auto self, parent, pagination)
++ currently can produce JSON and XML responses that can be set in configuration, or overridden in methods
++ content negotiation via Accept header, config file or method settings
 
 ##Installation:
 
@@ -21,7 +30,7 @@ Add this to your project root's `composer.json` file:
 ```
 If you're done, just run a `php composer install`, and the package is ready to be used!
 
-### Registering package with Laravel 4 as a service:
+### Registering the package with Laravel 4 as a service:
 
 Put the following in your `app/config/app.php` file under `providers` array:
 ```
@@ -80,6 +89,8 @@ The next level of abstraction is the service level. Currently there is no interf
 
 As stated above this package contains tools other then data manipulation as well. These tools can be found in the extra
  folder of the package.
+
+The general assumption is that you copy them into your _app/_ directory.
 
 ##### errors.php ([link](https://github.com/noherczeg/RestExt/blob/master/extra/errors.php))
 The package is currently built with a mindset that follows the convention of catching exceptions and events outside of
