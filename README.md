@@ -103,7 +103,7 @@ The package is currently built with a mindset that follows the convention of cat
 
 Usage: Add `require app_path().'/errors.php';` to the end of `app/start/global.php`
 
-##### filters.php ([link](https://github.com/noherczeg/RestExt/blob/master/extra/logs.php))
+##### filters.php ([link](https://github.com/noherczeg/RestExt/blob/master/extra/filters.php))
 In this file I have provided a few extra examples besides the default ones that could help in building a REST API.
 
 + localization handling with Accept Headers
