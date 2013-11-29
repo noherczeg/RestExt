@@ -82,7 +82,6 @@ As stated above this package contains tools other then data manipulation as well
  folder of the package.
 
 ##### errors.php
-
 The package is currently built with a mindset that follows the convention of catching exceptions and events outside of
  controllers, so in this file, you may find examples of some general error handler, like:
 
@@ -94,7 +93,6 @@ The package is currently built with a mindset that follows the convention of cat
 Usage: Add `require app_path().'/errors.php';` to the end of `app/start/global.php`
 
 ##### filters.php
-
 In this file I have provided a few extra examples besides the default ones that could help in building a REST API.
 
 + localization handling with Accept Headers
@@ -103,13 +101,11 @@ In this file I have provided a few extra examples besides the default ones that 
 Usage: Add `require app_path().'/filters.php';` to the end of `app/start/global.php`
 
 ##### logs.php
-
 This is an example listener which logs everything into the database.
 
 Usage: Add `require app_path().'/logs.php';` to the end of `app/start/global.php`
 
 ##### RootController.php
-
 This can be placed to anywhere where your controllers are and used as an entry point to your REST API. Since Level3 of the
 Richardson Maturity Model requires HATEOAS support this is crucial for your app.
 
@@ -120,7 +116,6 @@ This controller only generates links, but since a Resource can have contents as 
 other data as well.
 
 ##### routes.php
-
 Versioned routes with basic authentication. Uses the RootController example from above :)
 
 
