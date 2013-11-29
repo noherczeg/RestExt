@@ -1,5 +1,5 @@
 {
-    "name": "noherczeg/rest-ext",
+    "name": "noherczeg/restext",
     "description": "",
     "authors": [
         {
@@ -8,13 +8,11 @@
         }
     ],
     "require": {
-        "php": ">=5.3.0",
+        "php": ">=5.4.0",
         "illuminate/support": "4.0.*"
     },
     "autoload": {
-        "classmap": [
-            "src/migrations"
-        ],
+        "classmap": [],
         "psr-0": {
             "Noherczeg\\RestExt\\": "src/"
         }
