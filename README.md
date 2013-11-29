@@ -66,19 +66,22 @@ A ResourceEntity implementation adds the ability for your Models to:
 It's a good practice to use repositories in you app, sice that way you can abstract away the dependency from any store,
 or database implementation.
 
-Just like above there is an interface in the package which comes to your aid: `Noherczeg\RestExt\Repository\CRUDRepository`, and a  sample implementation which can be extended: `Noherczeg\RestExt\Repository\RestExtRepository`.
+Just like above there is an interface in the package which comes to your aid: `Noherczeg\RestExt\Repository\CRUDRepository`,
+and a  sample implementation which can be extended: `Noherczeg\RestExt\Repository\RestExtRepository`.
 
 Implementing or extending CRUDRepository gives you your basic CRUD operations with pagination support as well.
 
 ### Services
 
-The next level of abstraction is the service level. Currently there is no interface for services since not everyone uses them, so it won't be included.
+The next level of abstraction is the service level. Currently there is no interface for services since not everyone uses
+ them, so it won't be included.
 
 ### Extra features
 
-As stated above this package contains tools other then data manipulation as well. These tools can be found in the extra folder of the package.
+As stated above this package contains tools other then data manipulation as well. These tools can be found in the extra
+ folder of the package.
 
-#### errors.php
+##### errors.php
 
 The package is currently built with a mindset that follows the convention of catching exceptions and events outside of
  controllers, so in this file, you may find examples of some general error handler, like:
@@ -90,7 +93,7 @@ The package is currently built with a mindset that follows the convention of cat
 
 Usage: Add `require app_path().'/errors.php';` to the end of `app/start/global.php`
 
-#### filters.php
+##### filters.php
 
 In this file I have provided a few extra examples besides the default ones that could help in building a REST API.
 
@@ -99,13 +102,13 @@ In this file I have provided a few extra examples besides the default ones that 
 
 Usage: Add `require app_path().'/filters.php';` to the end of `app/start/global.php`
 
-#### logs.php
+##### logs.php
 
 This is an example listener which logs everything into the database.
 
 Usage: Add `require app_path().'/logs.php';` to the end of `app/start/global.php`
 
-#### RootController.php
+##### RootController.php
 
 This can be placed to anywhere where your controllers are and used as an entry point to your REST API. Since Level3 of the
 Richardson Maturity Model requires HATEOAS support this is crucial for your app.
@@ -116,12 +119,12 @@ Authorization interface.
 This controller only generates links, but since a Resource can have contents as well, if you'd like to you can provide
 other data as well.
 
-#### routes.php
+##### routes.php
 
 Versioned routes with basic authentication. Uses the RootController example from above :)
 
 
-## Guides
+# Guides
 
 Since complete usage examples are quite big ones depending on how much I would like to show, these guides are available
 separately in the following links:
