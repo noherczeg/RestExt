@@ -1,5 +1,5 @@
 {
-    "name": "noherczeg/RestExt",
+    "name": "noherczeg/restext",
     "version": "0.5.0",
     "description": "A REST extension package for the Laravel Framework",
     "keywords": ["REST", "extension", "package", "laravel", "json", "xml"],
