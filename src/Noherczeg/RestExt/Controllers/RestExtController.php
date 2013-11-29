@@ -1,5 +1,7 @@
 <?php
 
+namespace Noherczeg\RestExt\Controllers;
+
 use ColladAPI\Exceptions\PermissionException;
 use Illuminate\Routing\Controllers\Controller;
 use Illuminate\Support\Facades\Config;
@@ -47,12 +49,6 @@ class RestExtController extends Controller
         if ($this->accessPolicy === null)
             $this->accessPolicy = Config::get('restext::access_policy');
 
-        if ($this->mediaType === null)
-            $this->mediaType = Config::get('restext::media_type');
-
-        if ($this->charset == null)
-            $this->charset = Config::get('restext::charset');
-
         $securityRoles = $this->securityRoles;
         $accessPolicy = $this->accessPolicy;
 
@@ -73,9 +69,9 @@ class RestExtController extends Controller
      *
      * @param string $filter only|except
      * @param array $roles
-     * @return bool
-     * @throws ColladAPI\Exceptions\PermissionException
      * @throws \InvalidArgumentException
+     * @throws \ColladAPI\Exceptions\PermissionException
+     * @return bool
      */
     protected function allowForRoles($filter = null, array $roles = [])
     {

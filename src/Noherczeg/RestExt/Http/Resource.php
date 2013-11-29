@@ -5,11 +5,11 @@ namespace Noherczeg\RestExt\Http;
 
 class Resource {
 
-    private $links = [];
+    private $links = null;
     private $content = null;
     private $pagesMeta = null;
 
-    public function __construct(array $links = [], $content = null, array $pagesMeta = null)
+    public function __construct(array $links = null, $content = null, array $pagesMeta = null)
     {
         $this->links = $links;
         $this->content = $content;

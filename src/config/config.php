@@ -98,7 +98,7 @@ return array(
     |
     | Not yet used!
     |
-    | Should set wether the Accept Header should be prioritized, or the extension
+    | Should set wether the Accept Header should be prioritized, or the extension.
     |
     */
 
@@ -109,10 +109,35 @@ return array(
     | Pagination Parameter name
     |--------------------------------------------------------------------------
     |
-    | Name of the Query String Parameter which is used for pagination.
+    | Name of the Query String Parameter which is used for pagination. If using
+    | an Eloquent Repository this should not be changed!
     |
     */
 
     'page_param' => 'page',
+
+    /*
+    |--------------------------------------------------------------------------
+    | HTTP Realm Name
+    |--------------------------------------------------------------------------
+    |
+    | Name of the Realm used with HTTP operations (usually with basic auth).
+    |
+    */
+
+    'realm' => 'My Realm',
+
+    /*
+    |--------------------------------------------------------------------------
+    | List of available Languages
+    |--------------------------------------------------------------------------
+    |
+    | Just a list of langauge codes which are available for Localization.
+    |
+    | Not yet used by RestExt.
+    |
+    */
+
+    'available_languages' => ['en']
 
 );

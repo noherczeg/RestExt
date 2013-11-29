@@ -31,19 +31,18 @@ interface ResourceEntity {
     /**
      * @return \Illuminate\Database\Eloquent\Collection|static[]
      */
-    public function all();
+    public static function all();
 
     /**
      * @param int $entityId
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function findOrFail($entityId);
+    public static function findOrFail($entityId);
 
     /**
-     * @param int $entityId
      * @return bool|null
      */
-    public function delete($entityId);
+    public function delete();
 
     /**
      * @param array $options

@@ -1,6 +1,8 @@
 {
     "name": "noherczeg/restext",
-    "description": "",
+    "description": "A REST extension package for the Laravel Framework",
+    "keywords": ["REST", "extension", "package", "laravel", "json", "xml"],
+    "license": "MIT",
     "authors": [
         {
             "name": "Norbert Csaba Herczeg",
@@ -9,12 +11,13 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "illuminate/support": "4.0.*"
+        "illuminate/support": "4.0.*",
+        "jms/serializer": "0.14.*@dev"
     },
     "autoload": {
         "classmap": [],
         "psr-0": {
-            "Noherczeg\\RestExt\\": "src/"
+            "Noherczeg\\RestExt": "src/"
         }
     },
     "minimum-stability": "dev"

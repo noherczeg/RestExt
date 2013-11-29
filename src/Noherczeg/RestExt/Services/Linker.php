@@ -8,18 +8,18 @@ use Illuminate\Pagination\Paginator;
 
 interface Linker {
 
-    public static function generatePaginationLinks(Paginator $paginationObject);
+    public function generatePaginationLinks(Paginator $paginationObject);
 
-    public static function createLink($rel, $href);
+    public function createLink($rel, $href);
 
-    public static function createLinkToFirstPage($rel);
+    public function createLinkToFirstPage($rel);
 
-    public static function createSelfLink($withQueryStrings = false);
+    public function createSelfLink($withQueryStrings = false);
 
-    public static function createParentLink($parentResource = null);
+    public function createParentLink($parentResource = null);
 
-    public static function generatePaginationMetaInfo(Paginator $paginationObject);
+    public function generatePaginationMetaInfo(Paginator $paginationObject);
 
-    public static function linksToEntityRelations(Model $ent);
+    public function linksToEntityRelations(Model $ent);
 
 } 

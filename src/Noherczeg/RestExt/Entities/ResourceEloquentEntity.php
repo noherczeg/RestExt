@@ -3,6 +3,7 @@
 namespace Noherczeg\RestExt\Entities;
 
 
+use Illuminate\Support\Facades\Validator;
 use Noherczeg\RestExt\Exceptions\ValidationException;
 use Illuminate\Database\Eloquent\Model;
 

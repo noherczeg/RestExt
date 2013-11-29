@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
+use Noherczeg\RestExt\Http\QueryStringOperations;
 use Noherczeg\RestExt\Services\Linker;
 use Illuminate\Support\Facades\Request;
 
@@ -18,21 +19,21 @@ class RestLinker implements Linker {
      * @param Paginator $paginationObject
      * @return array
      */
-    public static function generatePaginationLinks(Paginator $paginationObject)
+    public function generatePaginationLinks(Paginator $paginationObject)
     {
         $links = [];
 
         $pageParam = Config::get('restext::page_param');
 
-        $links[] = self::createLink('first', URL::to(URL::full() . '?' . $pageParam . '=1'));
+        $links[] = $this->createLink('first', URL::to(Request::url() . QueryStringOperations::setQueryStringParam($pageParam, 1)));
 
         if ($paginationObject->getCurrentPage() > 1)
-            $links[] = self::createLink('previous', URL::to(URL::full() . '?' . $pageParam . '=' . ($paginationObject->getCurrentPage() - 1)));
+            $links[] = $this->createLink('previous', URL::to(Request::url() . QueryStringOperations::setQueryStringParam($pageParam, ($paginationObject->getCurrentPage() - 1))));
 
         if ($paginationObject->getCurrentPage() < $paginationObject->getLastPage())
-            $links[] = self::createLink('next', URL::to(URL::full() . '?' . $pageParam . '=' . ($paginationObject->getCurrentPage() + 1)));
+            $links[] = $this->createLink('next', URL::to(Request::url() . QueryStringOperations::setQueryStringParam($pageParam, ($paginationObject->getCurrentPage() + 1))));
 
-        $links[] = self::createLink('last', URL::to(URL::full() . '?' . $pageParam . '=' . $paginationObject->getLastPage()));
+        $links[] = $this->createLink('last', URL::to(Request::url() . QueryStringOperations::setQueryStringParam($pageParam, $paginationObject->getLastPage())));
 
         return $links;
     }
@@ -44,7 +45,7 @@ class RestLinker implements Linker {
      * @param string $href
      * @return array
      */
-    public static function createLink($rel, $href = null) {
+    public function createLink($rel, $href = null) {
         $url = ($href === null) ? URL::to(Request::url() . '/' . strtolower($rel)) : $href;
         return ['rel' => $rel, 'href' => $url];
     }
@@ -59,8 +60,8 @@ class RestLinker implements Linker {
      * @param $rel
      * @return array
      */
-    public static function createLinkToFirstPage($rel) {
-        $url = URL::to(Request::url() . '/' . strtolower($rel) . '?' . Config::get('restext::page_param') . '=1');
+    public function createLinkToFirstPage($rel) {
+        $url = URL::to(Request::url() . '/' . strtolower($rel) . QueryStringOperations::setQueryStringParam(Config::get('restext::page_param'), 1));
         return ['rel' => $rel, 'href' => $url];
     }
 
@@ -70,12 +71,12 @@ class RestLinker implements Linker {
      * @param $parentResource      The name of the parent Resource
      * @return array
      */
-    public static function createParentLink($parentResource = null)
+    public function createParentLink($parentResource = null)
     {
         $original = Request::url();
         $parentName = ($parentResource === null) ? 'parent' : $parentResource;
 
-        return self::createLink($parentName, substr($original, 0, strrpos($original, '/')));
+        return $this->createLink($parentName, substr($original, 0, strrpos($original, '/')));
     }
 
     /**
@@ -84,9 +85,9 @@ class RestLinker implements Linker {
      * @param bool $withQueryStrings    Decides if Query Strings should be attached as well, or not
      * @return array
      */
-    public static function createSelfLink($withQueryStrings = false)
+    public function createSelfLink($withQueryStrings = false)
     {
-        return self::createLink('self', ($withQueryStrings) ? URL::full() : Request::url());
+        return $this->createLink('self', ($withQueryStrings) ? URL::full() : Request::url());
     }
 
     /**
@@ -95,10 +96,11 @@ class RestLinker implements Linker {
      * @param Paginator $paginationObject
      * @return array
      */
-    public static function generatePaginationMetaInfo(Paginator $paginationObject)
+    public function generatePaginationMetaInfo(Paginator $paginationObject)
     {
         return [
-            'total' => $paginationObject->getTotal(), 'perPage' => $paginationObject->getPerPage(),
+            'total' => $paginationObject->getTotal(),
+            'perPage' => $paginationObject->getPerPage(),
             'isFirstPage' => ($paginationObject->getCurrentPage() == 1) ? true : false,
             'isLastPage' => ($paginationObject->getCurrentPage() == $paginationObject->getLastPage()) ? true : false
         ];
@@ -115,7 +117,7 @@ class RestLinker implements Linker {
      * @throws \InvalidArgumentException
      * @return array
      */
-    public static function linksToEntityRelations(Model $ent, $forceReturn = false)
+    public function linksToEntityRelations(Model $ent, $forceReturn = false)
     {
         $links = [];
         $relations = $ent->getRelations();
@@ -130,7 +132,7 @@ class RestLinker implements Linker {
         $rels = array_keys($relations);
 
         foreach ($rels as $rel) {
-            $links[] = self::createLink(ucfirst($rel), Request::url() . '/' . $rel);
+            $links[] = $this->createLink(ucfirst($rel), Request::url() . '/' . $rel);
         }
 
         return $links;

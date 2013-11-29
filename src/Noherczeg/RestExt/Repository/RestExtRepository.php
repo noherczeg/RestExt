@@ -4,7 +4,7 @@ namespace Noherczeg\RestExt\Repository;
 
 
 use Illuminate\Database\Eloquent\Builder;
-use Noherczeg\RestExt\Entities\Resource;
+use Noherczeg\RestExt\Entities\ResourceEntity;
 
 class RestExtRepository implements CRUDRepository {
 
@@ -14,7 +14,7 @@ class RestExtRepository implements CRUDRepository {
     /** @var Resource vagy annak leszarmazottja mellyel dolgozunk */
     protected $entity;
 
-    public function __construct(Resource $entity)
+    public function __construct(ResourceEntity $entity)
     {
         $this->entity = $entity;
     }
@@ -24,7 +24,7 @@ class RestExtRepository implements CRUDRepository {
      */
     public function all()
     {
-        return $this->entity->all();
+        return $this->entity->restCollection($this->pagination);
     }
 
     /**
@@ -46,7 +46,7 @@ class RestExtRepository implements CRUDRepository {
      */
     public function delete($entityId)
     {
-        $this->entity = Resource::findOrFail($entityId);
+        $this->entity = ResourceEntity::findOrFail($entityId);
         return $this->entity->delete();
     }
 
@@ -80,7 +80,7 @@ class RestExtRepository implements CRUDRepository {
     /**
      * Bekapcsolja/allitja a lapozast/annak mennyiseget per oldal
      *
-     * @param boolean|int $value
+     * @param int|boolean $value
      */
     public function enablePagination($value)
     {
@@ -95,6 +95,6 @@ class RestExtRepository implements CRUDRepository {
      */
     public function restCollection(Builder $entity)
     {
-        return $this->entity->restCollection($this->pagination);
+        return $this->entity->restCollection($entity);
     }
 }

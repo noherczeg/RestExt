@@ -4,6 +4,7 @@ namespace Noherczeg\RestExt;
 
 
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Request;
 use Noherczeg\RestExt\Http\Resource;
 use Noherczeg\RestExt\Services\Linker;
 

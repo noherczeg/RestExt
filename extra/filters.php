@@ -9,12 +9,14 @@
 | exists, and contains an available language code, then the app
 | automatically sets it as the locale.
 |
+| The list of available languages can be set in RestExt's configuration!
+|
 */
 
 App::before(function($request)
 {
     foreach ($request->getLanguages() as $requestLanguage) {
-        if (in_array($requestLanguage, Config::get('app.available_languages'))) {
+        if (in_array($requestLanguage, Config::get('restext::available_languages'))) {
             App::setLocale($requestLanguage);
             break;
         }

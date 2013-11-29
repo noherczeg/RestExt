@@ -3,44 +3,44 @@
 namespace Noherczeg\RestExt;
 
 
+use Illuminate\Config\Repository;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
-use JMS\Serializer\SerializerBuilder;
+use Illuminate\Support\Facades\Response;
+use JMS\Serializer\SerializerInterface;
 use Noherczeg\RestExt\Http\Resource;
 use Noherczeg\RestExt\Providers\HttpStatus;
 use Noherczeg\RestExt\Providers\MediaType;
 use Noherczeg\RestExt\Services\ResponseComposer;
-use Symfony\Component\HttpFoundation\Response;
 
-class RestResponseComposer implements ResponseComposer {
-
-    private $serializer;
+class RestResponse implements ResponseComposer {
 
     /**
-     * @var string The Media Type which is set for the HTTP Response
+     * Illuminate config repository.
+     *
+     * @var Repository
      */
-    private $mediaType = null;
+    protected $config;
 
     /**
-     * @var string The Charset of the Response
+     * @var \JMS\Serializer\SerializerInterface Serializer for our Responses
      */
-    private $charset = null;
+    protected $serializer;
 
     /**
      * @var string Wildcard used for any Media Type
      */
-    private $mediaTypeWildcard = '*/*';
+    protected $mediaTypeWildcard = '*/*';
 
     /**
      * @var array A list of supported MEdia Types. Used for produces(), and Request validation (Accept Header)
      */
-    private $supportedMediaTypes = [ MediaType::APPLICATION_JSON, MediaType::APPLICATION_XML ];
+    protected $supportedMediaTypes = [ MediaType::APPLICATION_JSON, MediaType::APPLICATION_XML ];
 
-    public function __construct()
+    public function __construct(SerializerInterface $serializer, Repository $config)
     {
-        $this->serializer = SerializerBuilder::create()->build();
-        $this->mediaType = Config::get('restext::media_type');
-        $this->charset = Config::get('restext::encoding');
+        $this->serializer = $serializer;
+        $this->config = $config;
     }
 
     /**
@@ -57,20 +57,26 @@ class RestResponseComposer implements ResponseComposer {
      * Overrides the returned MediaType of our Resource
      *
      * @param string $mt
+     * @return $this
      */
     public function setMediaType($mt)
     {
-        $this->mediaType = $mt;
+        $this->config->set('restext::media_type', $mt);
+
+        return $this;
     }
 
     /**
      * Overrides the default character set of our responses
      *
      * @param string $cs
+     * @return $this
      */
     public function setCharset($cs)
     {
-        $this->charset = $cs;
+        $this->config->set('restext::encoding', $cs);
+
+        return $this;
     }
 
     /**
@@ -81,13 +87,11 @@ class RestResponseComposer implements ResponseComposer {
      */
     public function sendResource(Resource $fromResource)
     {
-        $response = new Response(
-            $this->createResponseBody($fromResource),
-            $this->createResponseCode(),
-            ['Content-Type', $this->createContentType($this->mediaType, $this->charset)]
-        );
+        $finalizedResource = ($fromResource->getLinks() === null && $fromResource->getPagesMeta() === null) ? $fromResource->getContent() : $fromResource;
 
-        $response->setCharset($this->charset);
+        $response = Response::make($this->createResponseBody($finalizedResource), $this->createResponseCode());
+        $response->setCharset($this->config->get('restext::encoding'));
+        $response->header('Content-Type', $this->createContentType($this->config->get('restext::media_type'), $this->config->get('restext::encoding')));
 
         return $response;
     }
@@ -114,7 +118,7 @@ class RestResponseComposer implements ResponseComposer {
     {
         $finalType = $mediaType;
 
-        if (Config::get('restext::prefer_accept') && count(Request::getAcceptableContentTypes()) > 0 && !in_array($this->mediaTypeWildcard, Request::getAcceptableContentTypes())) {
+        if ($this->config->get('restext::prefer_accept') && count(Request::getAcceptableContentTypes()) > 0 && !in_array($this->mediaTypeWildcard, Request::getAcceptableContentTypes())) {
             foreach(Request::getAcceptableContentTypes() as $acceptType) {
                 if (in_array($acceptType, $this->getSupportedMediaTypes())) {
                     $finalType = Request::getAcceptableContentTypes()[0];
@@ -156,9 +160,12 @@ class RestResponseComposer implements ResponseComposer {
      */
     private function createResponseBody($data)
     {
-        $mediaType = $this->assembleMediaType($this->mediaType);
+        $mediaType = $this->assembleMediaType($this->config->get('restext::media_type'));
 
-        if(!$mediaType == MediaType::APPLICATION_JSON)
+        if($mediaType == MediaType::APPLICATION_JSON)
+            return $this->serializer->serialize($data, 'json');
+
+        if($mediaType == MediaType::APPLICATION_XML)
             return $this->serializer->serialize($data, 'xml');
 
         return $this->serializer->serialize($data, 'json');
