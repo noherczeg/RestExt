@@ -81,7 +81,7 @@ The next level of abstraction is the service level. Currently there is no interf
 As stated above this package contains tools other then data manipulation as well. These tools can be found in the extra
  folder of the package.
 
-##### errors.php
+##### errors.php ([link](https://github.com/noherczeg/RestExt/blob/master/extra/errors.php))
 The package is currently built with a mindset that follows the convention of catching exceptions and events outside of
  controllers, so in this file, you may find examples of some general error handler, like:
 
@@ -92,7 +92,7 @@ The package is currently built with a mindset that follows the convention of cat
 
 Usage: Add `require app_path().'/errors.php';` to the end of `app/start/global.php`
 
-##### filters.php
+##### filters.php ([link](https://github.com/noherczeg/RestExt/blob/master/extra/logs.php))
 In this file I have provided a few extra examples besides the default ones that could help in building a REST API.
 
 + localization handling with Accept Headers
@@ -100,22 +100,22 @@ In this file I have provided a few extra examples besides the default ones that 
 
 Usage: Add `require app_path().'/filters.php';` to the end of `app/start/global.php`
 
-##### logs.php
+##### logs.php ([link](https://github.com/noherczeg/RestExt/blob/master/extra/logs.php))
 This is an example listener which logs everything into the database.
 
 Usage: Add `require app_path().'/logs.php';` to the end of `app/start/global.php`
 
-##### RootController.php
+##### RootController.php ([link](https://github.com/noherczeg/RestExt/blob/master/extra/RootController.php))
 This can be placed to anywhere where your controllers are and used as an entry point to your REST API. Since Level3 of the
 Richardson Maturity Model requires HATEOAS support this is crucial for your app.
 
 In the example there are a few features which show other package functionallity like link building, and the use of the
 Authorization interface.
 
-This controller only generates links, but since a Resource can have contents as well, if you'd like to you can provide
+This controller only generates links, but since a Resources can have contents as well, if you'd like to you can provide
 other data as well.
 
-##### routes.php
+##### routes.php ([link](https://github.com/noherczeg/RestExt/blob/master/extra/routes.php))
 Versioned routes with basic authentication. Uses the RootController example from above :)
 
 
