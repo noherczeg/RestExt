@@ -203,7 +203,7 @@ Controllers serve as connectors between our routes and the service layer which o
 ```
 <?php
 
-use Repositories\PostRepository;
+use Repositories\CommentRepository;
 use Noherczeg\RestExt\Controllers\RestExtController;
 use Noherczeg\RestExt\Services\AuthorizationService;
 
