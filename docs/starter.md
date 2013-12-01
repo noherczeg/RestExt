@@ -262,6 +262,10 @@ class CommentsController extends RestExtController {
 
         $resource->addLink($this->createParentLink());
 
+        // With linksToEntityRelations($entity) the Linker will generate links to all the relations that the Entity returned
+        // by the Repository has. Which means the ones provided by "with('rel1', 'rel2', 'etc')".
+        $resource->addLinks(RestLinker::linksToEntityRelations($comment));
+
         return $this->sendResource($resource);
     }
 }
