@@ -3,6 +3,8 @@ RestExt
 
 A PHP REST Extension for the Laravel Framework.
 
+THIS IS AN ALPHA SOFTWARE.
+
 With this package you can easily create a REST API which:
 
 + can be versioned via route prefixes
@@ -135,7 +137,7 @@ Versioned routes with basic authentication. Uses the RootController example from
 Since complete usage examples are quite big ones depending on how much I would like to show, these guides are available
 separately in the following links:
 
-+ [Complete API with simple models, Authorization, etc...](http://github.com/noherczeg/RestExt/blob/master/docs/complete.md)
++ [Starter Guide with simple models, Authorization, etc...](http://github.com/noherczeg/RestExt/blob/master/docs/starter.md)
 
 
 ##Dev's note:
