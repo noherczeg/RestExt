@@ -116,7 +116,7 @@ _Sample implementation:_
 ```
 <?php
 
-namespace Repositories\;
+namespace Repositories;
 
 use Repositories\PostRepository;
 use Noherczeg\RestExt\Repository\RestExtRepository;
