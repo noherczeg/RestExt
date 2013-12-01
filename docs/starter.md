@@ -300,6 +300,30 @@ Route::group(array('prefix' => 'v1', 'before' => 'api.auth'), function()
 });
 ```
 
+##Basic Authentication
+
+Example provided in the [filters.php](https://github.com/noherczeg/RestExt/blob/master/extra/filters.php) file:
+
+```
+Route::filter('api.auth', function()
+{
+    if (!Request::getUser())
+    {
+        App::abort(401, 'A valid API key is required');
+    }
+
+    // we only ask for an API key, no password
+    $user = Szemely::where('api_key', '=', Request::getUser())->first();
+
+    if (!$user)
+    {
+        App::abort(401);
+    }
+
+    Auth::login($user);
+});
+```
+
 # Configuration:
 
 For the currently available configuration please check out the published [config.php](https://github.com/noherczeg/RestExt/blob/master/src/config/config.php)
