@@ -224,7 +224,9 @@ class CommentsController extends RestExtController {
         // We check if the "page" parameter has been set in the query string or not, and if it does, we set the
         // repository accordingly which means it will provide a Paginator for us, and not a simple Collection.
         //
-        // This means we'll have 15 results per page
+        // This means we'll have 15 results per page, but if you would like to give users the ability to control
+        // how many elements they can get / page, you could use enablePagination($this->pageParam()) since
+        // $this->pageParam() returns the parameter's value if it's set.
         if ($this->pageParam())
             $this->commentRepository->enablePagination(15);
 
