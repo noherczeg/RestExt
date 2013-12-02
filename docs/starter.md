@@ -209,7 +209,7 @@ use Noherczeg\RestExt\Services\AuthorizationService;
 
 class CommentsController extends RestExtController {
 
-    private $postRepository;
+    private $commentRepository;
 
     public function __construct(CommentRepository $commentRepository, AuthorizationService $auth)
     {
@@ -256,13 +256,13 @@ class CommentsController extends RestExtController {
         $this->allowForRoles('only', ['Admin']);
 
         // we can enable links separately as well, not just chained to a Resource creation
-        $this->enableLinks(true);
+        RestExt::links(true);
 
         $comment = $this->commentRepository->findById($id);
 
         $resource = RestExt::from($comment)->create();
 
-        $resource->addLink($this->createParentLink());
+        $resource->addLink(RestLinker::createParentLink());
 
         // With linksToEntityRelations($entity) the Linker will generate links to all the relations that the Entity returned
         // by the Repository has. Which means the ones provided by "with('rel1', 'rel2', 'etc')".
@@ -315,7 +315,7 @@ Route::filter('api.auth', function()
     }
 
     // we only ask for an API key, no password
-    $user = Szemely::where('api_key', '=', Request::getUser())->first();
+    $user = User::where('api_key', '=', Request::getUser())->first();
 
     if (!$user)
     {
