@@ -138,6 +138,9 @@ return array(
     |
     */
 
-    'available_languages' => ['en']
+    'available_languages' => ['en'],
+
+
+    'version' => 'v1'
 
 );

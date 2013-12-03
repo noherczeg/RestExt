@@ -7,9 +7,11 @@ use Illuminate\Support\Facades\Validator;
 use Noherczeg\RestExt\Exceptions\ValidationException;
 use Illuminate\Database\Eloquent\Model;
 
-class ResourceEloquentEntity extends Model implements ResourceEntity {
+abstract class ResourceEloquentEntity extends Model implements ResourceEntity {
 
     protected $rules = [];
+
+    protected $rootRelName = null;
 
     /**
      * Sets the return type of an Entity Collection accordingly. Should be called instead of get() or paginate()
@@ -36,7 +38,12 @@ class ResourceEloquentEntity extends Model implements ResourceEntity {
         $validator = Validator::make($this->attributes, $this->rules);
 
         if ($validator->fails()) {
-            throw new ValidationException($validator);
+            throw new ValidationException($validator->errors());
         }
+    }
+
+    public function getRootRelName()
+    {
+        return ($this->rootRelName === null) ? $this->getAttribute('table') : $this->rootRelName;
     }
 }

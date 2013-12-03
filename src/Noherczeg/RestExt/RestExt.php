@@ -3,8 +3,12 @@
 namespace Noherczeg\RestExt;
 
 
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
+use Noherczeg\RestExt\Entities\ResourceEntity;
 use Noherczeg\RestExt\Http\Resource;
 use Noherczeg\RestExt\Services\Linker;
 
@@ -19,10 +23,13 @@ class RestExt {
 
     private $linker;
 
+    private $version = '';
+
     public function __construct(Linker $linker)
     {
         $this->resource = new Resource();
         $this->linker = $linker;
+        $this->version = Config::get('restext::version');
     }
 
     /**
@@ -40,10 +47,12 @@ class RestExt {
         $data = ($fromData === null) ? $this->rawData->toArray() : $fromData;
         $contentCollection = null;
 
+        $version = strlen($this->version) > 0 ? $this->version . '/' : '';
+
         if ($this->links) {
 
             // self Link for our Resource
-            $this->resource->addLink($this->linker->createSelfLink());
+            $this->resource->addLink($this->linker->createSelfLink(true));
 
             if ($this->rawData instanceof Paginator) {
                 $this->rawData->links();
@@ -62,9 +71,7 @@ class RestExt {
 
             // If we allow Links for nested Resources this will generate them
             if ($withContentSelfLink) {
-                foreach ($contentCollection as $key => $resourceCandidate) {
-                    $contentCollection[$key]['links'][] = ['self' => Request::url() . '/' . $resourceCandidate['id']];
-                }
+                $this->nestedSelfRels($this->rawData, $contentCollection, $version);
             }
 
             $this->resource->setContent($contentCollection);
@@ -125,6 +132,56 @@ class RestExt {
         $this->rawData = $rawResource;
 
         return $this;
+    }
+
+    /**
+     * Sets the version number to use while generating Resources.
+     *
+     * @param mixed $version
+     */
+    public function setVersion($version)
+    {
+        $this->version = $version;
+    }
+
+    /**
+     * Returns the registered version number.
+     *
+     * @return mixed
+     */
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+    /**
+     * Sets the given $targetCollection's nested "self" links from the given raw data using the given version number.
+     *
+     * @param Collection|Paginator $rawData     Data provided
+     * @param $targetCollection                 Collection on links are set
+     * @param mixed $version                    Version number could potentialy come from anywhere
+     */
+    private function nestedSelfRels($rawData, &$targetCollection, $version)
+    {
+        $nestedData = null;
+
+        if ($rawData instanceof Model) {
+            $nestedData = $rawData->getRelations();
+        } else {
+            $nestedData = $rawData;
+        }
+
+        foreach ($nestedData as $key => $resourceCandidate) {
+            if ($resourceCandidate instanceof ResourceEntity) {
+                $targetCollection[$key]['links'][] = ['self' => Request::root() . '/' . $version . $resourceCandidate->getRootRelName() . '/' . $resourceCandidate->id];
+            }
+
+            if ($resourceCandidate instanceof Collection) {
+                foreach ($resourceCandidate as $rcKey => $innerCandidate) {
+                    $targetCollection[$key][$rcKey]['links'][] = ['self' => Request::root() . '/' . $version . $innerCandidate->getRootRelName() . '/' . $innerCandidate->id];
+                }
+            }
+        }
     }
 
 } 

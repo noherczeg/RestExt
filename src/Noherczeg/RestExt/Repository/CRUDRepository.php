@@ -17,7 +17,7 @@ interface CRUDRepository {
 
     public function delete($entityId);
 
-    public function restCollection(Builder $entity);
+    public function restCollection();
 
     public function enablePagination($boolValue);
 

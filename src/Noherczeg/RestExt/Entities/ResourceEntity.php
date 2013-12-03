@@ -55,4 +55,12 @@ interface ResourceEntity {
      * @return ResourceEntity|static
      */
     public function fill(array $options);
+
+    /**
+     * Returns the name of the rel which thi sentity is represented through. The name is the name which comes after the
+     * root url e.g. for UserEntity it should return "users", etc...
+     *
+     * @return string
+     */
+    public function getRootRelName();
 } 

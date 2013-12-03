@@ -6,7 +6,7 @@ namespace Noherczeg\RestExt\Repository;
 use Illuminate\Database\Eloquent\Builder;
 use Noherczeg\RestExt\Entities\ResourceEntity;
 
-class RestExtRepository implements CRUDRepository {
+abstract class RestExtRepository implements CRUDRepository {
 
     /** @var int Enable/disable pagination for the Entity associated with this Repository */
     protected $pagination = 0;
@@ -90,11 +90,10 @@ class RestExtRepository implements CRUDRepository {
     /**
      * Returns with a pagination compatible Collection or a simple Eloquent Collection
      *
-     * @param Builder $entity
      * @return array|\Illuminate\Database\Eloquent\Collection|\Illuminate\Pagination\Paginator|static[]
      */
-    public function restCollection(Builder $entity)
+    public function restCollection()
     {
-        return $this->entity->restCollection($entity);
+        return $this->entity->restCollection($this->pagination);
     }
 }

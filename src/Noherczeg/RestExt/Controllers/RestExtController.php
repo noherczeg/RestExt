@@ -2,17 +2,17 @@
 
 namespace Noherczeg\RestExt\Controllers;
 
-use ColladAPI\Exceptions\PermissionException;
 use Illuminate\Routing\Controllers\Controller;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Request;
+use Noherczeg\RestExt\Exceptions\PermissionException;
 use Noherczeg\RestExt\Providers\HttpStatus;
 use Noherczeg\RestExt\Services\ResponseComposer;
 
-class RestExtController extends Controller
+abstract class RestExtController extends Controller
 {
 
     /**
@@ -54,7 +54,7 @@ class RestExtController extends Controller
 
         // default action to prevent processing / returning of content if by default the access policy is set to
         // "whitelist" and no allowed roles have been set.
-        $this->afterFilter(function() use ($securityRoles, $accessPolicy)
+        $this->beforeFilter(function() use ($securityRoles, $accessPolicy)
         {
             if ($accessPolicy == 'whitelist' && count($securityRoles) == 0)
                 throw new PermissionException();
@@ -70,7 +70,7 @@ class RestExtController extends Controller
      * @param string $filter only|except
      * @param array $roles
      * @throws \InvalidArgumentException
-     * @throws \ColladAPI\Exceptions\PermissionException
+     * @throws PermissionException
      * @return bool
      */
     protected function allowForRoles($filter = null, array $roles = [])
