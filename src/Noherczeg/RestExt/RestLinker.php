@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
+use Noherczeg\RestExt\Entities\ResourceEntity;
 use Noherczeg\RestExt\Http\QueryStringOperations;
 use Noherczeg\RestExt\Services\Linker;
 use Illuminate\Support\Facades\Request;
@@ -91,6 +92,26 @@ class RestLinker implements Linker {
     }
 
     /**
+     * Creates a Link which points to a URL up $steps times from the current URL
+     *
+     * @param string $rel   Name of the Rel of the Link
+     * @param int $steps    Steps to go up in the URL
+     * @return array
+     */
+    public function createLinkUp($rel, $steps = 1)
+    {
+        $uriParts = explode("/",ltrim(Request::path()));
+        $count = 0;
+
+        while ($count < $steps) {
+            array_pop($uriParts);
+            $count++;
+        }
+
+        return $this->createLink($rel, Request::root() . '/' . implode('/', $uriParts));
+    }
+
+    /**
      * Creates an array of meta information for pagination
      *
      * @param Paginator $paginationObject
@@ -129,10 +150,13 @@ class RestLinker implements Linker {
             return $links;
         }
 
-        $rels = array_keys($relations);
+        foreach ($relations as $key => $rel) {
+            if ($rel instanceof ResourceEntity) {
+                $links[] = $this->createLink($rel->getRootRelName(), Request::url() . '/' . $rel->getRootRelName());
+            } else {
+                $links[] = $this->createLink($key, Request::url() . '/' . $key);
+            }
 
-        foreach ($rels as $rel) {
-            $links[] = $this->createLink(ucfirst($rel), Request::url() . '/' . $rel);
         }
 
         return $links;
