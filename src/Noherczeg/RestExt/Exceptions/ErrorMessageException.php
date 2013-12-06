@@ -2,6 +2,7 @@
 
 namespace Noherczeg\RestExt\Exceptions;
 
+use Exception;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\Contracts\MessageProviderInterface;
 use RuntimeException;
@@ -24,7 +25,7 @@ class ErrorMessageException extends \RuntimeException {
     }
 
     public function getMessages() {
-        return $this->messages;
+        return $this->messages->getMessages();
     }
 
 }
