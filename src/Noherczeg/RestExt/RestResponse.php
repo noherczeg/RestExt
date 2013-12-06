@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
 use JMS\Serializer\SerializerInterface;
+use Noherczeg\RestExt\Exceptions\ErrorMessageException;
 use Noherczeg\RestExt\Http\Resource;
 use Noherczeg\RestExt\Providers\HttpStatus;
 use Noherczeg\RestExt\Providers\MediaType;
@@ -35,7 +36,7 @@ class RestResponse implements ResponseComposer {
     /**
      * @var array A list of supported MEdia Types. Used for produces(), and Request validation (Accept Header)
      */
-    protected $supportedMediaTypes = [ MediaType::APPLICATION_JSON, MediaType::APPLICATION_XML ];
+    protected $supportedMediaTypes = [ MediaType::APPLICATION_JSON, MediaType::APPLICATION_XML, MediaType::TEXT_CSV ];
 
     public function __construct(SerializerInterface $serializer, Repository $config)
     {
@@ -67,6 +68,16 @@ class RestResponse implements ResponseComposer {
     }
 
     /**
+     * Returns the actual MediaType
+     *
+     * @return string
+     */
+    private function getMediaType()
+    {
+        return $this->config->get('restext::media_type');
+    }
+
+    /**
      * Overrides the default character set of our responses
      *
      * @param string $cs
@@ -92,6 +103,26 @@ class RestResponse implements ResponseComposer {
         $response = Response::make($this->createResponseBody($finalizedResource), $this->createResponseCode());
         $response->setCharset($this->config->get('restext::encoding'));
         $response->header('Content-Type', $this->createContentType($this->config->get('restext::media_type'), $this->config->get('restext::encoding')));
+
+        return $response;
+    }
+
+    public function sendFile($content, $fileName = 'tmpFile', $contentType = 'string')
+    {
+        if ($contentType !== 'string')
+            throw new ErrorMessageException('Can only convert from string');
+
+        if ($this->getMediaType() !== MediaType::TEXT_CSV)
+            throw new ErrorMessageException('Can only convert to CSV');
+
+        $response = new \Symfony\Component\HttpFoundation\Response();
+        $response->setContent($content);
+        $response->setStatusCode(HttpStatus::OK);
+        $response->headers->set('Content-Type', MediaType::TEXT_CSV);
+        $response->headers->set('Content-Disposition', 'attachment; filename=' . $fileName);
+        $response->headers->set('Content-Transfer-Encoding', 'binary');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
 
         return $response;
     }
@@ -147,7 +178,7 @@ class RestResponse implements ResponseComposer {
         if ($method == 'post')
             $code = HttpStatus::CREATED;
         elseif ($method == 'put' || $method == 'patch' || $method == 'delete')
-            $code == HttpStatus::NO_CONTENT;
+            $code = HttpStatus::NO_CONTENT;
 
         return $code;
     }
