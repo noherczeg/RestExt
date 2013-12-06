@@ -10,7 +10,7 @@ interface Linker {
 
     public function generatePaginationLinks(Paginator $paginationObject);
 
-    public function createLink($rel, $href);
+    public function createLink($rel, $href = null);
 
     public function createLinkToFirstPage($rel);
 
@@ -21,5 +21,7 @@ interface Linker {
     public function generatePaginationMetaInfo(Paginator $paginationObject);
 
     public function linksToEntityRelations(Model $ent);
+
+    public function createLinkUp($rel, $steps);
 
 } 
