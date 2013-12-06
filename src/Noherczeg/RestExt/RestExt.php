@@ -9,7 +9,9 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
 use Noherczeg\RestExt\Entities\ResourceEntity;
+use Noherczeg\RestExt\Exceptions\ErrorMessageException;
 use Noherczeg\RestExt\Http\Resource;
+use Noherczeg\RestExt\Services\CSVConverter;
 use Noherczeg\RestExt\Services\Linker;
 
 class RestExt {
@@ -173,15 +175,52 @@ class RestExt {
 
         foreach ($nestedData as $key => $resourceCandidate) {
             if ($resourceCandidate instanceof ResourceEntity) {
-                $targetCollection[$key]['links'][] = ['self' => Request::root() . '/' . $version . $resourceCandidate->getRootRelName() . '/' . $resourceCandidate->id];
+
+                // root Resource is a selected Resource not a Collection therefore we need the nested Resource's root rel
+                $addition = ($rawData instanceof Model) ? $resourceCandidate->getRootRelName() . '/' : '';
+
+                $targetCollection[$key]['links'][] = ['self' => Request::url() . '/' . $addition . $resourceCandidate->id];
             }
 
             if ($resourceCandidate instanceof Collection) {
                 foreach ($resourceCandidate as $rcKey => $innerCandidate) {
-                    $targetCollection[$key][$rcKey]['links'][] = ['self' => Request::root() . '/' . $version . $innerCandidate->getRootRelName() . '/' . $innerCandidate->id];
+                    $targetCollection[$key][$rcKey]['links'][] = ['self' => Request::url() . '/' . $innerCandidate->getRootRelName() . '/' . $innerCandidate->id];
                 }
             }
         }
+    }
+
+    /**
+     * Creates a CSV String from the given collection.
+     *
+     * Modified version of: https://gist.github.com/johanmeiring/2894568
+     *
+     * @param Collection|array $input
+     * @throws \InvalidArgumentException
+     * @return string
+     */
+    public function collectionToCSVString($input)
+    {
+        $converted = [];
+
+        if ($input instanceof Collection) {
+            $converted = $input->toArray();
+        } elseif (is_array($input)) {
+            $converted = $input;
+        } else {
+            throw new \InvalidArgumentException;
+        }
+        
+        if (count($converted) == 0)
+            return '';
+
+        $converter = new CSVConverter(array_keys($converted[0]));
+
+        foreach ($converted as $row) {
+            $converter->addRow($row);
+        }
+
+        return (string) $converter;
     }
 
 } 
