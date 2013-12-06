@@ -77,7 +77,7 @@ class Resource {
      *
      * @param array $links
      */
-    public function addLinks( array $links)
+    public function addLinks(array $links)
     {
         foreach ($links as $link) {
             $this->links[] = $link;

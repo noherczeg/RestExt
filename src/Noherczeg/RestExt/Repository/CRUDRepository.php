@@ -3,8 +3,6 @@
 namespace Noherczeg\RestExt\Repository;
 
 
-use Illuminate\Database\Eloquent\Builder;
-
 interface CRUDRepository {
 
     public function all();

@@ -4,6 +4,7 @@ namespace Noherczeg\RestExt\Repository;
 
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Noherczeg\RestExt\Entities\ResourceEntity;
 
 abstract class RestExtRepository implements CRUDRepository {
@@ -71,6 +72,7 @@ abstract class RestExtRepository implements CRUDRepository {
      */
     public function update(array $entityData)
     {
+        $this->entity = ResourceEntity::findOrFail($entityData[$this->entity->getKey()]);
         $this->entity->fill($entityData);
         $this->entity->validate();
 
