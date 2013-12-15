@@ -19,4 +19,10 @@ interface CRUDRepository {
 
     public function enablePagination($boolValue);
 
+    public function attach($parentId, $entityName, $entityId, array $pivotData = array());
+
+    public function detach($parentId, $entityName, $entityId);
+
+    public function associate($parentId, $entityName, $entityId);
+
 }

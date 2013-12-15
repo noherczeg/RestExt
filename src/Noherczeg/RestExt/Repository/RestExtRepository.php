@@ -3,8 +3,12 @@
 namespace Noherczeg\RestExt\Repository;
 
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use DateTime;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use InvalidArgumentException;
 use Noherczeg\RestExt\Entities\ResourceEntity;
 
 abstract class RestExtRepository implements CRUDRepository {
@@ -98,4 +102,101 @@ abstract class RestExtRepository implements CRUDRepository {
     {
         return $this->entity->restCollection($this->pagination);
     }
+
+    /**
+     * Connects a given Entity to the one this method is called on if they are in relation to each other. On success
+     * it returns the parent, on failure it returns false, or throws exceptions.
+     *
+     * This method intelligently guesses the relation type, works with belongsTo, HasMany, and every other variant as
+     * well. You don't need to bother handling it.
+     *
+     * @param integer $parentId             The Id of the parent Entity
+     * @param string $entityName            Name of the Entity which is in relation to the Repository's Entity
+     * @param integer $entityId             Id of the selected Entity
+     * @param array $pivotData              Optional data if we have pivot values
+     * @throws \InvalidArgumentException
+     * @return ResourceEntity
+     */
+    public function attach($parentId, $entityName, $entityId, array $pivotData = array())
+    {
+        $parent = $this->entity->findOrFail($parentId);
+
+        $modelToAttach = $entityName::findOrFail($entityId);
+
+        $relationInstance = $this->createRelationInstance($parent, $modelToAttach);
+
+        if ($parent->timestamps && !in_array('created_at', $pivotData))
+            $pivotData['created_at'] = new DateTime();
+
+        if ($relationInstance instanceof BelongsToMany) {
+            return $relationInstance->save($modelToAttach, $pivotData);
+        } elseif ($relationInstance instanceof HasOneOrMany) {
+            return $relationInstance->save($modelToAttach);
+        }
+
+        throw new InvalidArgumentException('The given Entity ' . $entityName . ' is not in relation with ' . get_class($this->entity));
+
+    }
+
+    public function detach($parentId, $entityName, $entityId)
+    {
+        $parent = $this->entity->findOrFail($parentId);
+
+        $modelToDetach = $entityName::findOrFail($entityId);
+
+        $relationInstance = $this->createRelationInstance($parent, $modelToDetach);
+
+        return $relationInstance->detach($entityId);
+
+    }
+
+    /**
+     * Associates an Entity with the one this Repository handles.
+     *
+     * @param integer $parentId             The Id of the parent Entity
+     * @param string $entityName            Namespaced name of the Entity you wish to associate
+     * @param integer $entityId             Id of the Entity you wish to associate
+     * @throws \InvalidArgumentException
+     * @return ResourceEntity
+     */
+    public function associate($parentId, $entityName, $entityId)
+    {
+        $parent = $this->entity->findOrFail($parentId);
+
+        $modelToAttach = $entityName::findOrFail($entityId);
+
+        if (!($modelToAttach instanceof ResourceEntity))
+            throw new InvalidArgumentException('The provided Entity is not an instance of ResourceEntity');
+
+        $relationMethodname = $modelToAttach->getClassName(true, true);
+
+        $parent->$relationMethodname()->associate($modelToAttach);
+
+        return $parent->save();
+    }
+
+    /**
+     * Creates a Relation instance for an Entity and the given Related one.
+     *
+     * This can be used for example manipulating pivot data, since we can't call relation methods (e.g. belongsTo, etc..)
+     * dynamically.
+     *
+     * @param ResourceEntity $parent
+     * @param ResourceEntity $relatedEntity
+     * @return Relation
+     * @throws \InvalidArgumentException
+     */
+    protected function createRelationInstance(ResourceEntity $parent, ResourceEntity $relatedEntity)
+    {
+        if (!($relatedEntity instanceof ResourceEntity))
+            throw new InvalidArgumentException('The provided Entity is not an instance of ResourceEntity');
+
+        $relToAttach = $relatedEntity->getRootRelName();
+
+        if ($relToAttach === null)
+            throw new InvalidArgumentException('The $rootRelName parameter has not been set!');
+
+        return $parent->$relToAttach();
+    }
+
 }

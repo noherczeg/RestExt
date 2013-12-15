@@ -46,4 +46,11 @@ abstract class ResourceEloquentEntity extends Model implements ResourceEntity {
     {
         return ($this->rootRelName === null) ? $this->getAttribute('table') : $this->rootRelName;
     }
+
+    public function getClassName($withoutNamespace = true, $toLower = false) {
+        $originalName = get_called_class();
+        $parts = explode('\\', $originalName);
+        $name = ($withoutNamespace) ? end($parts) : $originalName;
+        return ($toLower) ? strtolower($name) : $name;
+    }
 }

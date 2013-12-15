@@ -2,7 +2,7 @@
 
 namespace Noherczeg\RestExt\Controllers;
 
-use Illuminate\Routing\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;

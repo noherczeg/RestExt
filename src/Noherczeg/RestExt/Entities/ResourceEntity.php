@@ -63,4 +63,16 @@ interface ResourceEntity {
      * @return string
      */
     public function getRootRelName();
+
+    /**
+     * Utility method which returns the name of the class.
+     *
+     * Used for example when an association method is called because we provide namespaced class names, but in the
+     * entity's relations we only provide plain names, so it's required to get the simple name.
+     *
+     * @param bool $withoutNamespace    Cut off the namespace and give back the simple class name only
+     * @param bool $toLower             Set true for lower case version
+     * @return string
+     */
+    public function getClassName($withoutNamespace = true, $toLower = false);
 } 
