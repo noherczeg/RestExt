@@ -9,6 +9,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
 use Noherczeg\RestExt\Entities\ResourceEntity;
+use Noherczeg\RestExt\Exceptions\ErrorMessageException;
 use Noherczeg\RestExt\Http\Resource;
 use Noherczeg\RestExt\Services\CSVConverter;
 use Noherczeg\RestExt\Services\Linker;
@@ -45,8 +46,7 @@ class RestExt {
      */
     public function create($withContentSelfLink = false, $fromData = null)
     {
-
-        $data = ($fromData !== null) ? $fromData : (is_array($this->rawData)) ? $this->rawData->toArray() : $this->rawData;
+        $data = ($fromData === null) ? $this->rawData->toArray() : $fromData;
         $contentCollection = null;
 
         $version = strlen($this->version) > 0 ? $this->version . '/' : '';
@@ -72,12 +72,9 @@ class RestExt {
             }
 
             // If we allow Links for nested Resources this will generate them
-            if ($withContentSelfLink && !($data instanceof Model)) {
+            if ($withContentSelfLink) {
                 $this->nestedSelfRels($this->rawData, $contentCollection, $version);
             }
-
-            if ($data instanceof Model)
-                $contentCollection = $contentCollection->toArray();
 
             $this->resource->setContent($contentCollection);
         } else {

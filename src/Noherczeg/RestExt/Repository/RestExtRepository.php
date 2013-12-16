@@ -4,6 +4,7 @@ namespace Noherczeg\RestExt\Repository;
 
 
 use DateTime;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
@@ -176,7 +177,7 @@ abstract class RestExtRepository implements CRUDRepository {
     }
 
     /**
-     * Creates a Relation instance for an Entity and the given Related one.
+     * Utility method which creates a Relation instance for an Entity and the given Related one.
      *
      * This can be used for example manipulating pivot data, since we can't call relation methods (e.g. belongsTo, etc..)
      * dynamically.
@@ -197,6 +198,52 @@ abstract class RestExtRepository implements CRUDRepository {
             throw new InvalidArgumentException('The $rootRelName parameter has not been set!');
 
         return $parent->$relToAttach();
+    }
+
+    /**
+     * Returns a Collection of elements requested for the id
+     *
+     * @param int $parentId         ID of the parent Entity
+     * @param string $relationName  Name of the relation
+     * @return Collection
+     */
+    public function getRelatedCollection($parentId, $relationName)
+    {
+        return $this->entity->with($relationName)->findOrFail($parentId)->$relationName;
+    }
+
+    /**
+     * Returns an Entity from a Relation to a given Entity.
+     *
+     * @param int $parentId
+     * @param string  $relationName
+     * @param int $elementId
+     * @return ResourceEntity
+     */
+    public function getRelatedCollectionElement($parentId, $relationName, $elementId)
+    {
+        // get the reference key which will be used in the eager-load constaint, this way we don't need to run a find
+        // method on the DB
+        $parentName = $this->entity->getClassName(false);
+        $parentEnt = new $parentName();
+        $referenceKey = $this->simpleOtherKeyFromNamespaced($parentEnt->$relationName()->getOtherKey());
+
+        // optimized way of returning only the single requested nested entity from the db
+        return $this->entity->with(array($relationName => function($query) use ($elementId, $referenceKey) {
+            $query->where($referenceKey, $elementId);
+        }))->findOrFail($parentId)->$relationName->first();
+    }
+
+    /**
+     * Returns the non concatenated name of a key from a relation.
+     *
+     * @param string $namespacedKeyName
+     * @return string
+     */
+    protected function simpleOtherKeyFromNamespaced($namespacedKeyName)
+    {
+        $split = explode('.', $namespacedKeyName);
+        return end($split);
     }
 
 }

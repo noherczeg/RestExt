@@ -25,4 +25,8 @@ interface CRUDRepository {
 
     public function associate($parentId, $entityName, $entityId);
 
+    public function getRelatedCollection($parentId, $relationName);
+
+    public function getRelatedCollectionElement($parentId, $relationName, $elementId);
+
 }
