@@ -53,7 +53,7 @@ class RestLinker implements Linker {
     {
         $links = [];
 
-        $pageParam = Config::get('restext::page_param');
+        $pageParam = $this->config->get('restext::page_param');
 
         $links[] = $this->createLink('first', $this->url->to($this->request->url() . $this->queryStringOps->setQueryStringParam($pageParam, 1)));
 

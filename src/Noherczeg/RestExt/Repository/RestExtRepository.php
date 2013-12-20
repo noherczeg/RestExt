@@ -63,7 +63,7 @@ abstract class RestExtRepository implements CRUDRepository {
      */
     public function save(array $entity)
     {
-        $this->entity->fill($entity);
+        $this->entity = $this->entity->newInstance($entity);
         $this->entity->validate();
         return $this->entity->save();
     }
@@ -71,12 +71,13 @@ abstract class RestExtRepository implements CRUDRepository {
     /**
      * Frissiti a kapott adatok alapjan az adatokhoz tartozo Entitast
      *
+     * @param mixed $id
      * @param array $entityData
      * @return bool
      */
-    public function update(array $entityData)
+    public function update($id, array $entityData)
     {
-        $this->entity = $this->entity->findOrFail($entityData[$this->entity->getKey()]);
+        $this->entity = $this->entity->findOrFail($id);
         $this->entity->fill($entityData);
         $this->entity->validate();
 

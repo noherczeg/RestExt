@@ -4,8 +4,11 @@ namespace Noherczeg\RestExt\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
+use Noherczeg\RestExt\Entities\ResourceEntity;
 use Noherczeg\RestExt\Exceptions\PermissionException;
 use Noherczeg\RestExt\Providers\HttpStatus;
+use Noherczeg\RestExt\Repository\CRUDRepository;
+use Noherczeg\RestExt\Services\Pageable;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -54,7 +57,6 @@ abstract class RestExtController extends Controller
      */
     protected $request;
 
-
     /**
      * @var \Noherczeg\RestExt\Services\Linker Helper class for Link generation
      */
@@ -64,6 +66,11 @@ abstract class RestExtController extends Controller
      * @var \Noherczeg\RestExt\RestExt Resource generator, and util class
      */
     protected $restExt;
+
+    /**
+     * @var array MediaTypes accepted by this Controller
+     */
+    protected $consumes = ['*'];
 
     public function __construct()
     {
@@ -76,7 +83,7 @@ abstract class RestExtController extends Controller
         $this->linker = App::make('Noherczeg\RestExt\Services\Linker');
 
         $this->restExt = App::make('Noherczeg\RestExt\RestExt');
-        
+
         if ($this->accessPolicy === null)
             $this->accessPolicy = $this->config->get('restext::access_policy');
 
@@ -156,6 +163,8 @@ abstract class RestExtController extends Controller
      */
     protected function consume(array $mediaTypes)
     {
+        $this->consumes = $mediaTypes;
+
         if ($this->requestContentType() == null || in_array($this->requestContentType(), $mediaTypes))
             return true;
 
@@ -223,4 +232,31 @@ abstract class RestExtController extends Controller
             throw new HttpException($code, $message, null, $headers);
         }
     }
+
+    protected function allInput()
+    {
+        return $this->request->json()->all();
+    }
+
+    /**
+     * Sets the Pagination limit on the given Repository from the query string param specified in the configuration. If
+     * not an int greater than 0 is set, it won't do anything!
+     *
+     * @param Pageable $repo
+     * @param int $default
+     */
+    protected function setPaginationFor(Pageable &$repo, $default = 0)
+    {
+        $configDefault = $this->config->get('restext::page_limit_default');
+        $configParam = (int) $this->request->query($this->config->get('restext::page_limit_param'));
+
+        if ($default > 0) {
+            $repo->enablePagination($default);
+        } elseif ($configParam > 0) {
+            $repo->enablePagination($configParam);
+        } elseif ($configDefault > 0) {
+            $repo->enablePagination($configDefault);
+        }
+    }
+
 }

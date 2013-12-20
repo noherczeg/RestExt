@@ -53,4 +53,25 @@ abstract class ResourceEloquentEntity extends Model implements ResourceEntity {
         $name = ($withoutNamespace) ? end($parts) : $originalName;
         return ($toLower) ? strtolower($name) : $name;
     }
+
+    public function newInstance($attributes = array(), $exists = false)
+    {
+        // This method just provides a convenient way for us to generate fresh model
+        // instances of this current model. It is particularly useful during the
+        // hydration of new objects via the Eloquent query builder instances.
+        $model = new static((array) $attributes);
+
+        $model->exists = $exists;
+
+        return $model;
+    }
+
+    public static function with($relations)
+    {
+        if (is_string($relations)) $relations = func_get_args();
+
+        $instance = new static;
+
+        return $instance->newQuery()->with($relations);
+    }
 }

@@ -3,21 +3,19 @@
 namespace Noherczeg\RestExt\Repository;
 
 
-interface CRUDRepository {
+use Noherczeg\RestExt\Services\Pageable;
+
+interface CRUDRepository extends Pageable {
 
     public function all();
 
     public function save(array $entity);
 
-    public function update(array $entity);
+    public function update($id, array $entity);
 
     public function findById($entityId);
 
     public function delete($entityId);
-
-    public function restCollection();
-
-    public function enablePagination($boolValue);
 
     public function attach($parentId, $entityName, $entityId, array $pivotData = array());
 

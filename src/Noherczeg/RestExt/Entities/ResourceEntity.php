@@ -75,4 +75,21 @@ interface ResourceEntity {
      * @return string
      */
     public function getClassName($withoutNamespace = true, $toLower = false);
+
+    /**
+     * Create a new instance of the given model.
+     *
+     * @param  array  $attributes
+     * @param  bool   $exists
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public function newInstance($attributes = array(), $exists = false);
+
+    /**
+     * Being querying a model with eager loading.
+     *
+     * @param  array|string  $relations
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public static function with($relations);
 } 

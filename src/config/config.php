@@ -116,6 +116,10 @@ return array(
 
     'page_param' => 'page',
 
+    'page_limit_param' => 'limit',
+
+    'page_limit_default' => 0,
+
     /*
     |--------------------------------------------------------------------------
     | HTTP Realm Name

@@ -218,7 +218,7 @@ class RestResponse implements ResponseComposer {
         if($mediaType == MediaType::APPLICATION_XML)
             return $this->serializer->serialize($data, 'xml');
 
-        return $this->serializer->serialize($data, 'json');
+        return $data;
     }
 
     /**
@@ -227,8 +227,8 @@ class RestResponse implements ResponseComposer {
      * @param string $contentType                           The Content Type of the Response
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function plainResponse($data, $status = 200, $contentType = MediaType::APPLICATION_JSON)
+    public function plainResponse($data, $status = HttpStatus::OK, $contentType = MediaType::APPLICATION_JSON)
     {
-        return $this->embededResponse->create($data, $status, $contentType);
+        return $this->embededResponse->create($this->createResponseBody($data), $status, [$contentType]);
     }
 }
