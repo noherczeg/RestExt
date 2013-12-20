@@ -4,6 +4,8 @@ namespace Noherczeg\RestExt\Services;
 
 
 use Noherczeg\RestExt\Http\Resource;
+use Noherczeg\RestExt\Providers\MediaType;
+use Symfony\Component\HttpFoundation\Response;
 
 interface ResponseComposer {
 
@@ -35,5 +37,13 @@ interface ResponseComposer {
      * @param string $cs
      */
     public function setCharset($cs);
+
+    /**
+     * @param mixed $data           The data to send back
+     * @param int $status           Status code of the Response
+     * @param string $contentType   The Content Type of the Response
+     * @return Response
+     */
+    public function plainResponse($data, $status = 200, $contentType = MediaType::APPLICATION_JSON);
 
 } 

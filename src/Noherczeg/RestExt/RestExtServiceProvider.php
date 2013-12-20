@@ -3,7 +3,9 @@
 namespace Noherczeg\RestExt;
 
 use Illuminate\Support\ServiceProvider;
+use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
+use Noherczeg\RestExt\Http\QueryStringOperations;
 
 class RestExtServiceProvider extends ServiceProvider {
 
@@ -31,19 +33,19 @@ class RestExtServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-        $this->app['restlinker'] = $this->app->share(function($app)
+        $this->app['linker'] = $this->app->share(function($app)
         {
-            return new RestLinker();
+            return new RestLinker(new QueryStringOperations());
         });
 
-        $this->app['restresponse'] = $this->app->share(function($app)
+        $this->app['restResponse'] = $this->app->share(function($app)
         {
-            return new RestResponse(SerializerBuilder::create()->build(), $app['config']);
+            return new RestResponse();
         });
 
-        $this->app['restext'] = $this->app->share(function($app)
+        $this->app['restExt'] = $this->app->share(function($app)
         {
-            return new RestExt($app['restlinker']);
+            return new RestExt($app['linker'], $app['config']);
         });
 	}
 
@@ -54,7 +56,7 @@ class RestExtServiceProvider extends ServiceProvider {
 	 */
 	public function provides()
 	{
-        return array('restlinker', 'restext', 'restresponse');
+        return array('linker', 'restExt', 'restResponse');
 	}
 
 }

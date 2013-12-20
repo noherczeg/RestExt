@@ -4,24 +4,13 @@ namespace Noherczeg\RestExt\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Request;
 use Noherczeg\RestExt\Exceptions\PermissionException;
-use Noherczeg\RestExt\Facades\RestResponse;
 use Noherczeg\RestExt\Providers\HttpStatus;
-use Noherczeg\RestExt\Services\ResponseComposer;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 abstract class RestExtController extends Controller
 {
-
-    /**
-     * @var string Actual URL Path where the Controller is called on
-     */
-    protected $route = null;
 
     /**
      * @var \Noherczeg\RestExt\Services\AuthorizationService Authorization Service Implementatio goes here
@@ -29,9 +18,9 @@ abstract class RestExtController extends Controller
     protected $authorizationService = null;
 
     /**
-     * @var ResponseComposer
+     * @var \Noherczeg\RestExt\Services\ResponseComposer RESTful Response Composer
      */
-    protected $responseComposer = null;
+    protected $restResponse = null;
 
     /**
      * Overrides the default Content-Type on Responses
@@ -50,14 +39,46 @@ abstract class RestExtController extends Controller
      */
     private $securityRoles = [];
 
+    /**
+     * @var string Access policy for this Controller
+     */
     protected $accessPolicy = null;
+
+    /**
+     * @var \Illuminate\Config\Repository Application configuration
+     */
+    protected $config;
+
+    /**
+     * @var \Illuminate\Http\Request Built in Request object
+     */
+    protected $request;
+
+
+    /**
+     * @var \Noherczeg\RestExt\Services\Linker Helper class for Link generation
+     */
+    protected $linker;
+
+    /**
+     * @var \Noherczeg\RestExt\RestExt Resource generator, and util class
+     */
+    protected $restExt;
 
     public function __construct()
     {
-        $this->route = Request::path();
+        $this->request = App::make('request');
+        
+        $this->config = App::make('config');
+        
+        $this->restResponse = App::make('Noherczeg\RestExt\Services\ResponseComposer');
 
+        $this->linker = App::make('Noherczeg\RestExt\Services\Linker');
+
+        $this->restExt = App::make('Noherczeg\RestExt\RestExt');
+        
         if ($this->accessPolicy === null)
-            $this->accessPolicy = Config::get('restext::access_policy');
+            $this->accessPolicy = $this->config->get('restext::access_policy');
 
         // if we set the property it should override the Accept Header even if it it is set otherwise in the configs
         if ($this->produces !== null)
@@ -77,11 +98,11 @@ abstract class RestExtController extends Controller
 
             // If the "prefer_accept" configuration is set to true, we set RestResponse to send the MediaType given in
             // the Accept Header if it's compatible with our system. If not we set it to the default config's value.
-            if (Config::get('restext::prefer_accept')) {
-                if(in_array($this->requestAccepts(), RestResponse::getSupportedMediaTypes()))
-                    RestResponse::setMediaType($this->requestAccepts());
+            if ($this->config->get('restext::prefer_accept')) {
+                if(in_array($this->requestAccepts(), $this->restResponse->getSupportedMediaTypes()))
+                    $this->restResponse->setMediaType($this->requestAccepts());
 
-                RestResponse::setMediaType(Config::get('restext::media_type'));
+                $this->restResponse->setMediaType($this->config->get('restext::media_type'));
             }
 
         });
@@ -118,12 +139,12 @@ abstract class RestExtController extends Controller
         if (in_array($this->mediaTypeWildcard, $mediaTypes))
             return true;
 
-        foreach(Request::getAcceptableContentTypes() as $contentType) {
-            if (!in_array($contentType, $mediaTypes) && Config::get('restext::restrict_accept'))
-                App::abort(HttpStatus::UNSUPPORTED_MEDIA_TYPE, 'Requested MediaType is not supported');
+        foreach($this->request->getAcceptableContentTypes() as $contentType) {
+            if (!in_array($contentType, $mediaTypes) && $this->config->get('restext::restrict_accept'))
+                $this->abort(HttpStatus::UNSUPPORTED_MEDIA_TYPE, 'Requested MediaType is not supported');
         }
 
-        RestResponse::setMediaType($mediaTypes[0]);
+        $this->restResponse->setMediaType($mediaTypes[0]);
     }
 
     /**
@@ -148,10 +169,10 @@ abstract class RestExtController extends Controller
      */
     protected function pageParam()
     {
-        $pageParam = Config::get('restext::page_param');
+        $pageParam = $this->config->get('restext::page_param');
 
-        if (Request::query($pageParam) !== null)
-            return Request::query($pageParam);
+        if ($this->request->query($pageParam) !== null)
+            return $this->request->query($pageParam);
         else
             return false;
     }
@@ -164,7 +185,7 @@ abstract class RestExtController extends Controller
      */
     protected function requestAccepts($all = false)
     {
-        $fullList = Request::getAcceptableContentTypes();
+        $fullList = $this->request->getAcceptableContentTypes();
 
         return ($all) ? $fullList : $fullList[0];
     }
@@ -176,10 +197,30 @@ abstract class RestExtController extends Controller
      */
     protected function requestContentType()
     {
-        $full = Request::header('Content-Type');
+        $full = $this->request->header('Content-Type');
 
         if (strpos($full, ';'))
             return trim(explode(';', $full)[0]);
         return $full;
+    }
+
+    /**
+     * Throw an HttpException with the given data.
+     *
+     * @param  int $code
+     * @param  string $message
+     * @param  array $headers
+     * @throws HttpException
+     * @throws NotFoundHttpException
+     * @return void
+     *
+     */
+    public function abort($code, $message = '', array $headers = array())
+    {
+        if ($code == 404) {
+            throw new NotFoundHttpException($message);
+        } else {
+            throw new HttpException($code, $message, null, $headers);
+        }
     }
 }

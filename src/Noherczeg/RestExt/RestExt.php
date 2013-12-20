@@ -3,13 +3,13 @@
 namespace Noherczeg\RestExt;
 
 
+use Illuminate\Config\Repository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
 use Noherczeg\RestExt\Entities\ResourceEntity;
-use Noherczeg\RestExt\Exceptions\ErrorMessageException;
 use Noherczeg\RestExt\Http\Resource;
 use Noherczeg\RestExt\Services\CSVConverter;
 use Noherczeg\RestExt\Services\Linker;
@@ -26,12 +26,15 @@ class RestExt {
     private $linker;
 
     private $version = '';
+    
+    private $config;
 
-    public function __construct(Linker $linker)
+    public function __construct(Linker $linker, Repository $config)
     {
+        $this->config = $config;
         $this->resource = new Resource();
         $this->linker = $linker;
-        $this->version = Config::get('restext::version');
+        $this->version = $this->config->get('restext::version');
     }
 
     /**
@@ -42,7 +45,7 @@ class RestExt {
      *
      * @param bool $withContentSelfLink
      * @param mixed $fromData
-     * @return Resource
+     * @return \Noherczeg\RestExt\Http\Resource
      */
     public function create($withContentSelfLink = false, $fromData = null)
     {

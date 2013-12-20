@@ -16,9 +16,9 @@ class QueryStringOperations {
      * @param bool $dontOverwrite   If set to false it will overwrite a param with the same name
      * @return string
      */
-    public static function setQueryStringParam($key, $value, $dontOverwrite = false)
+    public function setQueryStringParam($key, $value, $dontOverwrite = false)
     {
-        $source = self::getValues();
+        $source = $this->getValues();
 
         $results = [];
 
@@ -45,7 +45,7 @@ class QueryStringOperations {
      *
      * @return array
      */
-    public static function getValues()
+    public function getValues()
     {
         $qs = Request::getQueryString();
 
@@ -58,14 +58,14 @@ class QueryStringOperations {
         // if we have multiple params set
         if(strpos($qs, '&') !== FALSE) {
             foreach (explode('&', $qs) as $segment) {
-                $result[] = self::splitSegment($segment);
+                $result[] = $this->splitSegment($segment);
             }
 
             return $result;
         }
 
         // if we only have one set
-        return [self::splitSegment($qs)];
+        return [$this->splitSegment($qs)];
     }
 
     /**
@@ -74,7 +74,7 @@ class QueryStringOperations {
      * @param $segment
      * @return array
      */
-    private static function splitSegment($segment)
+    private function splitSegment($segment)
     {
         $segmentSplitted = explode('=', $segment);
         return [ 'key' => $segmentSplitted[0], 'value' => $segmentSplitted[1] ];

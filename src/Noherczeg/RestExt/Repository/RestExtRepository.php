@@ -5,7 +5,6 @@ namespace Noherczeg\RestExt\Repository;
 
 use DateTime;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -34,7 +33,7 @@ abstract class RestExtRepository implements CRUDRepository {
     }
 
     /**
-     * Kivalasztja az azonositohoz tartozo Entitast
+     * Selects an Entity with the given Primary Key
      *
      * @param $entityId
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|static
@@ -52,7 +51,7 @@ abstract class RestExtRepository implements CRUDRepository {
      */
     public function delete($entityId)
     {
-        $this->entity = ResourceEntity::findOrFail($entityId);
+        $this->entity = $this->entity->findOrFail($entityId);
         return $this->entity->delete();
     }
 
@@ -77,7 +76,7 @@ abstract class RestExtRepository implements CRUDRepository {
      */
     public function update(array $entityData)
     {
-        $this->entity = ResourceEntity::findOrFail($entityData[$this->entity->getKey()]);
+        $this->entity = $this->entity->findOrFail($entityData[$this->entity->getKey()]);
         $this->entity->fill($entityData);
         $this->entity->validate();
 

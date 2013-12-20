@@ -4,15 +4,17 @@ namespace Noherczeg\RestExt;
 
 
 use Illuminate\Config\Repository;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\App;
 use JMS\Serializer\SerializerInterface;
 use Noherczeg\RestExt\Exceptions\ErrorMessageException;
 use Noherczeg\RestExt\Http\Resource;
 use Noherczeg\RestExt\Providers\HttpStatus;
 use Noherczeg\RestExt\Providers\MediaType;
 use Noherczeg\RestExt\Services\ResponseComposer;
+use Noherczeg\RestExt\Services\Status;
+use Noherczeg\RestExt\Services\The;
 
 class RestResponse implements ResponseComposer {
 
@@ -34,14 +36,28 @@ class RestResponse implements ResponseComposer {
     protected $mediaTypeWildcard = '*/*';
 
     /**
+     * @var \Illuminate\Http\Request Request object
+     */
+    protected $request;
+
+    /**
+     * @var \Illuminate\Http\Response Embeded Response object, used to create custom responses
+     */
+    private $embededResponse;
+
+    /**
      * @var array A list of supported MEdia Types. Used for produces(), and Request validation (Accept Header)
      */
     protected $supportedMediaTypes = [ MediaType::APPLICATION_JSON, MediaType::APPLICATION_XML, MediaType::TEXT_CSV ];
 
-    public function __construct(SerializerInterface $serializer, Repository $config)
+    public function __construct()
     {
-        $this->serializer = $serializer;
-        $this->config = $config;
+        $this->request = App::make('request');
+
+        $this->config = App::make('config');
+
+        $this->serializer = App::make('serializer');
+        $this->embededResponse = App::make('Symfony\Component\HttpFoundation\Response');
     }
 
     /**
@@ -94,15 +110,15 @@ class RestResponse implements ResponseComposer {
      * Creates a Response object filled with the content and meta info of the Resource which is returned
      *
      * @param \Noherczeg\RestExt\Http\Resource $fromResource
-     * @return \Illuminate\Http\Response|Response
+     * @return \Illuminate\Http\Response
      */
     public function sendResource(Resource $fromResource)
     {
         $finalizedResource = ($fromResource->getLinks() === null && $fromResource->getPagesMeta() === null) ? $fromResource->getContent() : $fromResource;
 
-        $response = Response::make($this->createResponseBody($finalizedResource), $this->createResponseCode());
+        $response = $this->embededResponse->create($this->createResponseBody($finalizedResource), $this->createResponseCode());
         $response->setCharset($this->config->get('restext::encoding'));
-        $response->header('Content-Type', $this->createContentType($this->config->get('restext::media_type'), $this->config->get('restext::encoding')));
+        $response->headers->set('Content-Type', $this->createContentType($this->config->get('restext::media_type'), $this->config->get('restext::encoding')));
 
         return $response;
     }
@@ -115,7 +131,7 @@ class RestResponse implements ResponseComposer {
         if ($this->getMediaType() !== MediaType::TEXT_CSV)
             throw new ErrorMessageException('Can only convert to CSV');
 
-        $response = new \Symfony\Component\HttpFoundation\Response();
+        $response = $this->embededResponse->create();
         $response->setContent($content);
         $response->setStatusCode(HttpStatus::OK);
         $response->headers->set('Content-Type', MediaType::TEXT_CSV);
@@ -149,10 +165,13 @@ class RestResponse implements ResponseComposer {
     {
         $finalType = $mediaType;
 
-        if ($this->config->get('restext::prefer_accept') && count(Request::getAcceptableContentTypes()) > 0 && !in_array($this->mediaTypeWildcard, Request::getAcceptableContentTypes())) {
-            foreach(Request::getAcceptableContentTypes() as $acceptType) {
+        if (
+            $this->config->get('restext::prefer_accept') && count($this->request->getAcceptableContentTypes()) > 0 &&
+            !in_array($this->mediaTypeWildcard, $this->request->getAcceptableContentTypes())
+        ) {
+            foreach($this->request->getAcceptableContentTypes() as $acceptType) {
                 if (in_array($acceptType, $this->getSupportedMediaTypes())) {
-                    $finalType = Request::getAcceptableContentTypes()[0];
+                    $finalType = $this->request->getAcceptableContentTypes()[0];
                     break;
                 }
             }
@@ -173,7 +192,7 @@ class RestResponse implements ResponseComposer {
     private function createResponseCode()
     {
         $code = HttpStatus::OK;
-        $method = strtolower(Request::getMethod());
+        $method = strtolower($this->request->getMethod());
 
         if ($method == 'post')
             $code = HttpStatus::CREATED;
@@ -200,5 +219,16 @@ class RestResponse implements ResponseComposer {
             return $this->serializer->serialize($data, 'xml');
 
         return $this->serializer->serialize($data, 'json');
+    }
+
+    /**
+     * @param mixed $data                                   The data to send back
+     * @param int $status                                   Status code of the Response
+     * @param string $contentType                           The Content Type of the Response
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function plainResponse($data, $status = 200, $contentType = MediaType::APPLICATION_JSON)
+    {
+        return $this->embededResponse->create($data, $status, $contentType);
     }
 }
